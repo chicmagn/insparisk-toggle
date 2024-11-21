@@ -15,15 +15,14 @@ function App() {
 
   const checkWorkflow = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_N8N_API_URL}v1/workflows/${workflowId}`, {
-        headers: {
-          'X-N8N-API-KEY': `${import.meta.env.VITE_N8N_API_KEY}`
-        },
-        params: {
-          id: workflowId // If you need to send the ID as a query parameter
-        }
-      });
-      setActivate(response.data.active)
+      const url = `${import.meta.env.VITE_N8N_API_URL}check`;
+      
+      const response = await axios.get(url);
+      
+      setTimeout(() => {
+        console.log(response.data.active)
+        setActivate(response.data.active)  
+      }, 100);
     } catch (error) {
       console.error(error); // Log any errors
     }
@@ -31,20 +30,20 @@ function App() {
 
   useEffect(() => {
     checkWorkflow();
-  }, []);
+  }, [setActivate]);
 
   const changeSwitch = (e) => {
     let data = new FormData();
     data.append('id', workflowId);
 
-    axios.post(`${import.meta.env.VITE_N8N_API_URL}v1/workflows/${workflowId}/${on ? 'deactivate' : 'activate'}`, data, {
+    axios.post(`${import.meta.env.VITE_N8N_API_URL}${activate ? 'deactivate' : 'activate'}`, data, {
       headers: {
         'X-N8N-API-KEY': `${import.meta.env.VITE_N8N_API_KEY}`,
       }
     })
       .then((response) => {
         console.log(JSON.stringify(response.data));
-        setOn(prev => !prev);
+        setActivate(prev => !prev);
       })
       .catch((error) => {
         console.log(error);
@@ -71,7 +70,7 @@ function App() {
         <div className="toggle-container">
           <span>Status</span>
           <label className="toggle-switch">
-            <input type="checkbox" id="toggleSwitch" defaultChecked onChange={changeSwitch} />
+            <input type="checkbox" id="toggleSwitch" checked={activate} onChange={changeSwitch} />
             <span className="slider"></span>
           </label>
           <span>{activate ? 'On' : 'Off'}</span>
